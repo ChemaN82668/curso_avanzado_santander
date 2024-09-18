@@ -35,7 +35,7 @@ class BuilderXML(Builder):
         linea = ""
         self.etiqueta = etiqueta
         for pos, i in enumerate(L):
-            linea += f"<{self.cabs[pos]}>" + str(i) + f"</{self.cabs[pos]}>"
+            linea += f"<{self.cabs[pos]}>" + str(i).strip() + f"</{self.cabs[pos]}>"
 
         return f"<{etiqueta}>" + linea + f"</{etiqueta}>"
 
@@ -74,8 +74,24 @@ class BuilderHTML(Builder):
         return "<tr>" + detalle + "</tr>"
 
     def crearFichero(self, texto, path):
-        pathFinal = path + ".html"
-        print(pathFinal)
+        fich_plantilla = None
+        fOut = None
+        try:
+            fich_plantilla = open("plantilla.html","r")
+            html = fich_plantilla.read()
+            tabla = f"<table>{texto}</table>"
+            html.replace("<body></body>", f"<body>{tabla}</body>")
+            pathFinal = path + ".html"
+            fOut = open(pathFinal, "w")
+            fOut.write(html)
+            print(f"Se ha generado el fichero: {pathFinal}")
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            if fOut: fOut.close()
+            if fich_plantilla: fich_plantilla.close()
 
 
 class Director:
@@ -87,7 +103,7 @@ class Director:
 
     def __analizarPath(self, path):
         if "/" not in path:
-            self.nombre = path.partition(".")[0]
+            self.nombre = path.partition(".")[0].lower()
             self.directorios = "."
         else:
             L = path.split("/")
@@ -128,4 +144,4 @@ if __name__ == "__main__":
 
     builder = BuilderXML()
     director = Director(builder)
-    director.convertirFichero("patron_builder/Empleados.txt")
+    director.convertirFichero("patron_builder/Pedidos.txt")
